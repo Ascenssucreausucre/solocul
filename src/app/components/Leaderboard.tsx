@@ -113,7 +113,7 @@ export default function Leaderboard() {
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial", backgroundColor: "#121212", color: "#fff", minHeight: "100vh" }}>
-      <h1>Leaderboard SoloQ</h1>
+      <h1>Leaderboard SoloCUL</h1>
       <button
         onClick={fetchAllPlayers}
         disabled={loading}
