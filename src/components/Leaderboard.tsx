@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import PlayerCard from "./PlayerCard";
-import PlayerLastGame from "./PlayerLastGame";
 
 type PlayerData = {
   name: string;
@@ -88,6 +87,9 @@ export default function Leaderboard() {
               role: p.teamPosition,
               summonerSpells: [p.summoner1Id, p.summoner2Id],
               win: p.win,
+              kills: p.kills,      
+              deaths: p.deaths,     
+              assists: p.assists,
             }));
           }
         }
@@ -96,7 +98,15 @@ export default function Leaderboard() {
       return { name: gameName, tag: tagLine, rank, wins, losses, winrate, lastMatchDraft };
     } catch (err: any) {
       console.error(err);
-      return { name: gameName, tag: tagLine, rank: "❌ " + err.message, wins: 0, losses: 0, winrate: 0, lastMatchDraft: [] };
+      return {
+        name: gameName,
+        tag: tagLine,
+        rank: "❌ " + err.message,
+        wins: 0,
+        losses: 0,
+        winrate: 0,
+        lastMatchDraft: [],
+      };
     }
   };
 
@@ -112,21 +122,34 @@ export default function Leaderboard() {
   }, []);
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial", backgroundColor: "#121212", color: "#fff", minHeight: "100vh" }}>
+    <div
+      style={{
+        padding: "20px",
+        fontFamily: "Arial",
+        backgroundColor: "#121212",
+        color: "#fff",
+        minHeight: "100vh",
+      }}
+    >
       <h1>Leaderboard SoloCUL</h1>
       <button
         onClick={fetchAllPlayers}
         disabled={loading}
-        style={{ padding: "8px 16px", backgroundColor: loading ? "#555" : "#007bff", color: "#fff", border: "none", borderRadius: "4px", cursor: loading ? "not-allowed" : "pointer", marginBottom: "20px" }}
+        style={{
+          padding: "8px 16px",
+          backgroundColor: loading ? "#555" : "#007bff",
+          color: "#fff",
+          border: "none",
+          borderRadius: "4px",
+          cursor: loading ? "not-allowed" : "pointer",
+          marginBottom: "20px",
+        }}
       >
         {loading ? "Chargement..." : "Mettre à jour"}
       </button>
 
       {playersData.map((p, i) => (
-        <div key={i}>
-          <PlayerCard {...p} />
-          <PlayerLastGame draft={p.lastMatchDraft || []} />
-        </div>
+        <PlayerCard key={i} {...p} />
       ))}
     </div>
   );
