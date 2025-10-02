@@ -12,7 +12,7 @@ export default function Home() {
       }}
     >
       <h1 style={{ textAlign: "center", marginBottom: "40px" }}>
-        SoloQ Challenge - Leaderboard
+        SoloCul Challenge - Leaderboard
       </h1>
 
       {/* Leaderboard */}
