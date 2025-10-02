@@ -18,7 +18,7 @@ type DraftProps = {
 export default function PlayerLastGame({ draft, isWin }: DraftProps) {
   const [championImages, setChampionImages] = useState<Record<string, string>>({});
 
-  // Fonction pour récupérer l'image du champion
+
   const getChampionImageUrl = async (championName: string) => {
     try {
       const response = await fetch(
@@ -26,7 +26,9 @@ export default function PlayerLastGame({ draft, isWin }: DraftProps) {
       );
       const data = await response.json();
       const championKey = data.data[championName].id;
-      return `https://ddragon.leagueoflegends.com/cdn/img/champion/loading/${championKey}_0.jpg`;
+
+      //https://ddragon.leagueoflegends.com/cdn/img/champion/loading/${championKey}_0.jpg
+      return `https://cdn.dpm.lol/15.19.1/champion/${championKey}/square`;
     } catch (error) {
       console.error("Erreur lors de la récupération de l'image du champion :", error);
       return null;
@@ -74,9 +76,8 @@ export default function PlayerLastGame({ draft, isWin }: DraftProps) {
             alt={p.champion}
             style={{
               width: "100%",
-              height: "220px",
+              height: "150px",
               objectFit: "cover",
-              
             }}
           />
         )}
