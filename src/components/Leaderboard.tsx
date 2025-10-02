@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import PlayerCard from "./PlayerCard";
 
@@ -10,25 +9,36 @@ type PlayerData = {
   wins: number;
   losses: number;
   winrate: number;
-  lastMatchDraft?: any[];
+  lastMatchDraft?: Array<{
+    summonerName: string;
+    puuid: string;
+    champion: string;
+    role: string;
+    summonerSpells: number[];
+    win: boolean;
+    kills: number;
+    deaths: number;
+    assists: number;
+  }>;
+  puuid: string; // Obligatoire
 };
 
 export default function Leaderboard() {
-  const API_KEY = "RGAPI-3924fc2d-e1b9-4a93-9784-27518a9aa82a";
-
+  const API_KEY = "RGAPI-a1bf8450-1241-40e3-8109-a7147c19f7a9";
   const [playersInput] = useState([
     { gameName: "Inertie", tagLine: "00000" },
     { gameName: "tartofoutr", tagLine: "HPI" },
-    { gameName: "Patate de Combat", tagLine: "9470" },
+    { gameName: "Patito Willix", tagLine: "EUW" },
   ]);
   const [playersData, setPlayersData] = useState<PlayerData[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchPlayer = async (gameName: string, tagLine: string) => {
+  const fetchPlayer = async (gameName: string, tagLine: string): Promise<PlayerData> => {
     try {
       const encodedGameName = encodeURIComponent(gameName.trim());
       const encodedTagLine = encodeURIComponent(tagLine.trim());
 
+      // 1. Récupérer le compte
       const accountRes = await fetch(
         `https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodedGameName}/${encodedTagLine}`,
         { headers: { "X-Riot-Token": API_KEY } }
@@ -37,11 +47,11 @@ export default function Leaderboard() {
       const accountData = await accountRes.json();
       const puuid = accountData.puuid;
 
+      // 2. Récupérer le classement SoloQ
       const leagueRes = await fetch(
         `https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/${accountData.id}`,
         { headers: { "X-Riot-Token": API_KEY } }
       );
-
       let leagueData = [];
       if (leagueRes.ok) {
         leagueData = await leagueRes.json();
@@ -53,7 +63,6 @@ export default function Leaderboard() {
         if (!leagueResAlt.ok) throw new Error("Impossible de récupérer le classement.");
         leagueData = await leagueResAlt.json();
       }
-
       const soloQ = leagueData.find((entry: any) => entry.queueType === "RANKED_SOLO_5x5");
       let rank = "Non classé";
       let wins = 0;
@@ -65,12 +74,13 @@ export default function Leaderboard() {
       }
       const winrate = wins + losses > 0 ? Math.round((wins / (wins + losses)) * 100) : 0;
 
+      // 3. Récupérer le dernier match
+      let lastMatchDraft: PlayerData["lastMatchDraft"] = [];
       const matchesRes = await fetch(
         `https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/${puuid}/ids?start=0&count=1`,
         { headers: { "X-Riot-Token": API_KEY } }
       );
 
-      let lastMatchDraft: any[] = [];
       if (matchesRes.ok) {
         const matchIds = await matchesRes.json();
         if (matchIds.length > 0) {
@@ -82,20 +92,21 @@ export default function Leaderboard() {
           if (matchRes.ok) {
             const matchData = await matchRes.json();
             lastMatchDraft = matchData.info.participants.map((p: any) => ({
-              summonerName: p.summonerName,
+              summonerName: p.summonerName || "",
+              puuid: p.puuid,
               champion: p.championName,
               role: p.teamPosition,
               summonerSpells: [p.summoner1Id, p.summoner2Id],
               win: p.win,
-              kills: p.kills,      
-              deaths: p.deaths,     
+              kills: p.kills,
+              deaths: p.deaths,
               assists: p.assists,
             }));
           }
         }
       }
 
-      return { name: gameName, tag: tagLine, rank, wins, losses, winrate, lastMatchDraft };
+      return { name: gameName, tag: tagLine, rank, wins, losses, winrate, lastMatchDraft, puuid: puuid || "" };
     } catch (err: any) {
       console.error(err);
       return {
@@ -106,6 +117,7 @@ export default function Leaderboard() {
         losses: 0,
         winrate: 0,
         lastMatchDraft: [],
+        puuid: "",
       };
     }
   };
@@ -122,15 +134,7 @@ export default function Leaderboard() {
   }, []);
 
   return (
-    <div
-      style={{
-        padding: "20px",
-        fontFamily: "Arial",
-        backgroundColor: "#121212",
-        color: "#fff",
-        minHeight: "100vh",
-      }}
-    >
+    <div style={{ padding: "20px", fontFamily: "Arial", backgroundColor: "#121212", color: "#fff", minHeight: "100vh" }}>
       <h1>Leaderboard SoloCUL</h1>
       <button
         onClick={fetchAllPlayers}
@@ -147,7 +151,6 @@ export default function Leaderboard() {
       >
         {loading ? "Chargement..." : "Mettre à jour"}
       </button>
-
       {playersData.map((p, i) => (
         <PlayerCard key={i} {...p} />
       ))}
