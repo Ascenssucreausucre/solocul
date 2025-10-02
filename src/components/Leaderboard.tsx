@@ -14,7 +14,7 @@ type PlayerData = {
 };
 
 export default function Leaderboard() {
-  const API_KEY = "RGAPI-4d3ef0c6-2144-4879-8c03-6094cad67813";
+  const API_KEY = "RGAPI-3924fc2d-e1b9-4a93-9784-27518a9aa82a";
 
   const [playersInput] = useState([
     { gameName: "Inertie", tagLine: "00000" },
